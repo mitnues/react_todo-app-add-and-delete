@@ -7,9 +7,15 @@ interface Props {
   todo: Todo;
   isLoading: boolean;
   onDelete: () => void;
+  onToggle: () => void;
 }
 
-export const TodoItem: React.FC<Props> = ({ todo, isLoading, onDelete }) => {
+export const TodoItem: React.FC<Props> = ({
+  todo,
+  isLoading,
+  onDelete,
+  onToggle,
+}) => {
   return (
     <div
       className={classNames('todo', { completed: todo.completed })}
@@ -20,8 +26,8 @@ export const TodoItem: React.FC<Props> = ({ todo, isLoading, onDelete }) => {
           checked={todo.completed}
           className="todo__status"
           data-cy="TodoStatus"
-          readOnly
           type="checkbox"
+          onChange={onToggle}
           aria-label={`Mark ${todo.title} as ${todo.completed ? 'incomplete' : 'complete'}`}
         />
       </label>
@@ -30,7 +36,7 @@ export const TodoItem: React.FC<Props> = ({ todo, isLoading, onDelete }) => {
         {todo.title}
       </span>
 
-      <TodoDeleteButton onDelete={onDelete} />
+      <TodoDeleteButton onDelete={onDelete} isLoading={isLoading} />
 
       <div
         className={classNames('modal', { 'is-active': isLoading })}

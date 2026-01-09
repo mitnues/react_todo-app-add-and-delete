@@ -7,4 +7,5 @@ export interface Todo {
 
 export interface User {
   id: number;
+  email?: string;
 }

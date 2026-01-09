@@ -8,7 +8,7 @@ import {
   TodoList,
 } from './components';
 import { Todo, User } from './types/Todo';
-import { createTodo, deleteTodo, getTodos } from './api/todosApi';
+import { createTodo, deleteTodo, getTodos, updateTodo } from './api/todosApi';
 
 export const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -63,8 +63,15 @@ export const App: React.FC = () => {
     return () => clearTimeout(timer);
   }, [error]);
 
+  const handleLogin = (email: string) => {
+    const newUser = { id: 1, email };
+
+    setUser(newUser);
+    localStorage.setItem('user', JSON.stringify(newUser));
+  };
+
   if (!user) {
-    return <UserWarning />;
+    return <UserWarning onLogin={handleLogin} />;
   }
 
   const visibleTodos = todos.filter(todo => {
@@ -80,8 +87,8 @@ export const App: React.FC = () => {
   });
 
   // Only show tempTodo if it matches current filter
-  const isActive = filter === 'active' && !tempTodo.completed;
-  const isCompleted = filter === 'completed' && tempTodo.completed;
+  const isActive = tempTodo && filter === 'active' && !tempTodo.completed;
+  const isCompleted = tempTodo && filter === 'completed' && tempTodo.completed;
 
   const visibleTempTodo =
     tempTodo && (filter === 'all' || isActive || isCompleted) ? tempTodo : null;
@@ -113,11 +120,13 @@ export const App: React.FC = () => {
       ...newTodoData,
     });
 
+    // Clear input immediately (optimistic UX)
+    setNewTodoTitle('');
+
     try {
       const createdTodo = await createTodo(newTodoData);
 
       setTodos([...todos, createdTodo]);
-      setNewTodoTitle('');
     } catch {
       setError('Unable to add a todo');
     } finally {
@@ -133,17 +142,74 @@ export const App: React.FC = () => {
 
   const handleDeleteTodo = async (id: number) => {
     setError(null);
-    setProcessingIds([...processingIds, id]);
+    // Optimistically remove the todo from UI
+    const index = todos.findIndex(t => t.id === id);
+    const removed = index !== -1 ? todos[index] : null;
+
+    setTodos(prev => prev.filter(t => t.id !== id));
+    setProcessingIds(prev => [...prev, id]);
 
     try {
       await deleteTodo(id);
-      setTodos(todos.filter(todo => todo.id !== id));
     } catch {
       setError('Unable to delete a todo');
+
+      // Restore removed todo at its previous position
+      if (removed) {
+        setTodos(prev => {
+          const copy = [...prev];
+          const insertAt = Math.min(Math.max(0, index), copy.length);
+
+          copy.splice(insertAt, 0, removed);
+
+          return copy;
+        });
+      }
     } finally {
-      setProcessingIds(processingIds.filter(processId => processId !== id));
+      setProcessingIds(prev => prev.filter(processId => processId !== id));
 
       // Focus input after response
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    }
+  };
+
+  const handleToggleTodo = async (id: number) => {
+    setError(null);
+    setProcessingIds(prev => [...prev, id]);
+
+    // Optimistic update using previous state
+    let newCompletedValue: boolean | null = null;
+
+    setTodos(prev => {
+      const updated = prev.map(t => {
+        if (t.id === id) {
+          newCompletedValue = !t.completed;
+
+          return { ...t, completed: !t.completed };
+        }
+
+        return t;
+      });
+
+      return updated;
+    });
+
+    try {
+      const newCompleted = newCompletedValue ?? true;
+
+      await updateTodo(id, { completed: newCompleted });
+    } catch {
+      setError('Unable to update a todo');
+
+      // Revert optimistic update
+      setTodos(prev =>
+        prev.map(t => (t.id === id ? { ...t, completed: !t.completed } : t)),
+      );
+    } finally {
+      setProcessingIds(prev => prev.filter(processId => processId !== id));
+
       if (inputRef.current) {
         inputRef.current.focus();
       }
@@ -203,6 +269,7 @@ export const App: React.FC = () => {
             tempTodo={visibleTempTodo}
             processingIds={processingIds}
             onDeleteTodo={handleDeleteTodo}
+            onToggleTodo={handleToggleTodo}
           />
 
           {todos.length > 0 && (
