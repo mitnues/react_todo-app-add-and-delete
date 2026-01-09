@@ -19,11 +19,7 @@ export const Footer: React.FC<Props> = ({
   return (
     <footer className="todoapp__footer">
       <span className="todo-count" data-cy="TodosCounter">
-        {activeCount}
-        {' '}
-        {activeCount === 1 ? 'item' : 'items'}
-        {' '}
-        left
+        {activeCount} {activeCount === 1 ? 'item' : 'items'} left
       </span>
 
       <Filter selectedFilter={selectedFilter} onFilterChange={onFilterChange} />

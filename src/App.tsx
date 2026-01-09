@@ -1,21 +1,14 @@
-/* eslint-disable max-len */
-/* eslint-disable jsx-a11y/control-has-associated-label */
 import React, { useEffect, useState, useRef } from 'react';
 import { UserWarning } from './UserWarning';
 import {
   ErrorNotification,
-  Filter,
   FilterType,
   Footer,
   NewTodoField,
   TodoList,
 } from './components';
 import { Todo, User } from './types/Todo';
-import {
-  createTodo,
-  deleteTodo,
-  getTodos,
-} from './api/todosApi';
+import { createTodo, deleteTodo, getTodos } from './api/todosApi';
 
 export const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -32,9 +25,11 @@ export const App: React.FC = () => {
   // Load user from localStorage
   useEffect(() => {
     const userJson = localStorage.getItem('user');
+
     if (userJson) {
       try {
         const userData = JSON.parse(userJson);
+
         setUser(userData);
       } catch {
         // Invalid JSON
@@ -64,6 +59,7 @@ export const App: React.FC = () => {
     }
 
     const timer = setTimeout(() => setError(null), 3000);
+
     return () => clearTimeout(timer);
   }, [error]);
 
@@ -75,18 +71,20 @@ export const App: React.FC = () => {
     if (filter === 'active') {
       return !todo.completed;
     }
+
     if (filter === 'completed') {
       return todo.completed;
     }
+
     return true;
   });
 
   // Only show tempTodo if it matches current filter
-  const visibleTempTodo = tempTodo && (
-    (filter === 'all') ||
-    (filter === 'active' && !tempTodo.completed) ||
-    (filter === 'completed' && tempTodo.completed)
-  ) ? tempTodo : null;
+  const isActive = filter === 'active' && !tempTodo.completed;
+  const isCompleted = filter === 'completed' && tempTodo.completed;
+
+  const visibleTempTodo =
+    tempTodo && (filter === 'all' || isActive || isCompleted) ? tempTodo : null;
 
   const completedCount = todos.filter(todo => todo.completed).length;
   const activeCount = todos.length - completedCount;
@@ -96,6 +94,7 @@ export const App: React.FC = () => {
 
     if (!trimmedTitle) {
       setError('Title should not be empty');
+
       return;
     }
 
@@ -116,6 +115,7 @@ export const App: React.FC = () => {
 
     try {
       const createdTodo = await createTodo(newTodoData);
+
       setTodos([...todos, createdTodo]);
       setNewTodoTitle('');
     } catch {
@@ -123,7 +123,7 @@ export const App: React.FC = () => {
     } finally {
       setTempTodo(null);
       setIsAddingTodo(false);
-      
+
       // Focus input after response
       if (inputRef.current) {
         inputRef.current.focus();
@@ -142,7 +142,7 @@ export const App: React.FC = () => {
       setError('Unable to delete a todo');
     } finally {
       setProcessingIds(processingIds.filter(processId => processId !== id));
-      
+
       // Focus input after response
       if (inputRef.current) {
         inputRef.current.focus();
@@ -152,6 +152,7 @@ export const App: React.FC = () => {
 
   const handleClearCompleted = async () => {
     const completedTodos = todos.filter(todo => todo.completed);
+
     setError(null);
 
     let hasError = false;
@@ -168,7 +169,7 @@ export const App: React.FC = () => {
 
     try {
       await Promise.all(deletionPromises);
-      
+
       if (hasError) {
         setError('Unable to delete a todo');
       }
@@ -216,10 +217,7 @@ export const App: React.FC = () => {
         </div>
       )}
 
-      <ErrorNotification
-        error={error}
-        onClose={() => setError(null)}
-      />
+      <ErrorNotification error={error} onClose={() => setError(null)} />
     </div>
   );
 };

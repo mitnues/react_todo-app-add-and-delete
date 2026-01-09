@@ -28,6 +28,7 @@ export const NewTodoField: React.FC<Props> = ({
     e.preventDefault();
 
     const trimmedTitle = value.trim();
+
     if (!trimmedTitle) {
       return;
     }
@@ -39,6 +40,7 @@ export const NewTodoField: React.FC<Props> = ({
     <form onSubmit={handleSubmit}>
       <input
         ref={inputRef}
+        aria-label="New todo input"
         className="todoapp__new-todo"
         data-cy="NewTodoField"
         disabled={isLoading}

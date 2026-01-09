@@ -22,13 +22,11 @@ export const TodoItem: React.FC<Props> = ({ todo, isLoading, onDelete }) => {
           data-cy="TodoStatus"
           readOnly
           type="checkbox"
+          aria-label={`Mark ${todo.title} as ${todo.completed ? 'incomplete' : 'complete'}`}
         />
       </label>
 
-      <span
-        className="todo__title"
-        data-cy="TodoTitle"
-      >
+      <span className="todo__title" data-cy="TodoTitle">
         {todo.title}
       </span>
 

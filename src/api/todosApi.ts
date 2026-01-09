@@ -3,13 +3,13 @@ import { Todo } from '../types/Todo';
 const BASE_URL = 'https://jsonplaceholder.typicode.com';
 
 export const getTodos = (userId: number): Promise<Todo[]> => {
-  return fetch(`${BASE_URL}/todos?userId=${userId}`)
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Failed to load todos');
-      }
-      return response.json();
-    });
+  return fetch(`${BASE_URL}/todos?userId=${userId}`).then(response => {
+    if (!response.ok) {
+      throw new Error('Failed to load todos');
+    }
+
+    return response.json();
+  });
 };
 
 export const createTodo = (todo: Omit<Todo, 'id'>): Promise<Todo> => {
@@ -23,6 +23,7 @@ export const createTodo = (todo: Omit<Todo, 'id'>): Promise<Todo> => {
     if (!response.ok) {
       throw new Error('Failed to create todo');
     }
+
     return response.json();
   });
 };
@@ -51,6 +52,7 @@ export const updateTodo = (
     if (!response.ok) {
       throw new Error('Failed to update todo');
     }
+
     return response.json();
   });
 };
