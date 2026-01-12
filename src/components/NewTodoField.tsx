@@ -27,13 +27,7 @@ export const NewTodoField: React.FC<Props> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const trimmedTitle = value.trim();
-
-    if (!trimmedTitle) {
-      return;
-    }
-
-    onSubmit(trimmedTitle);
+    onSubmit(value);
   };
 
   return (

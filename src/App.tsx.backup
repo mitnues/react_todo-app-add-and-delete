@@ -52,14 +52,6 @@ export const App: React.FC = () => {
       .finally(() => setIsLoading(false));
   }, [user]);
 
-  // Focus input after adding a todo
-  useEffect(() => {
-    if (!isAddingTodo && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [isAddingTodo]);
-
-
   // Auto-hide error after 3 seconds
   useEffect(() => {
     if (!error) {
@@ -139,6 +131,11 @@ export const App: React.FC = () => {
     } finally {
       setTempTodo(null);
       setIsAddingTodo(false);
+
+      // Focus input after response
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
     }
   };
 
