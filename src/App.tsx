@@ -59,7 +59,6 @@ export const App: React.FC = () => {
     }
   }, [isAddingTodo]);
 
-
   // Auto-hide error after 3 seconds
   useEffect(() => {
     if (!error) {

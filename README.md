@@ -52,7 +52,7 @@ Remove all the completed todos after the `Clear completed` button click:
 - replace `describe.skip` with `describe` for the root `describe`
 
 ## DEMO LINK
-[https://mitnes.github.io/react_todo-app-add-and-delete/](https://mitnes.github.io/react_todo-app-add-and-delete/)
+[https://mitnues.github.io/react_todo-app-add-and-delete/](https://mitnues.github.io/react_todo-app-add-and-delete/)
 
 ## Instructions
 - Install Prettier Extention and use this [VSCode settings](https://mate-academy.github.io/fe-program/tools/vscode/settings.json) to enable format on save.
