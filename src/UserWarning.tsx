@@ -21,23 +21,10 @@ export const UserWarning: React.FC<Props> = ({ onLogin }) => {
     // Simulate login by storing user email
     const user = { email: trimmedEmail };
 
-    try {
-      // Fetch user info from the reference API
-      const response = await fetch(
-        'https://mate-academy.github.io/react_student-registration',
-      );
-
-      if (response.ok) {
-        localStorage.setItem('user', JSON.stringify(user));
-        onLogin(trimmedEmail);
-      }
-    } catch {
-      // Fallback: still allow login even if fetch fails
-      localStorage.setItem('user', JSON.stringify(user));
-      onLogin(trimmedEmail);
-    } finally {
-      setIsLoading(false);
-    }
+    // Store user and proceed with login
+    localStorage.setItem('user', JSON.stringify(user));
+    onLogin(trimmedEmail);
+    setIsLoading(false);
   };
 
   return (

@@ -143,29 +143,13 @@ export const App: React.FC = () => {
 
   const handleDeleteTodo = async (id: number) => {
     setError(null);
-    // Optimistically remove the todo from UI
-    const index = todos.findIndex(t => t.id === id);
-    const removed = index !== -1 ? todos[index] : null;
-
-    setTodos(prev => prev.filter(t => t.id !== id));
     setProcessingIds(prev => [...prev, id]);
 
     try {
       await deleteTodo(id);
+      setTodos(prev => prev.filter(t => t.id !== id));
     } catch {
       setError('Unable to delete a todo');
-
-      // Restore removed todo at its previous position
-      if (removed) {
-        setTodos(prev => {
-          const copy = [...prev];
-          const insertAt = Math.min(Math.max(0, index), copy.length);
-
-          copy.splice(insertAt, 0, removed);
-
-          return copy;
-        });
-      }
     } finally {
       setProcessingIds(prev => prev.filter(processId => processId !== id));
 
