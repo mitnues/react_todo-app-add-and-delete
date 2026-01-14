@@ -203,31 +203,30 @@ export const App: React.FC = () => {
 
   const handleClearCompleted = async () => {
     const completedTodos = todos.filter(todo => todo.completed);
-
     setError(null);
-
+    if (completedTodos.length === 0) {
+      if (inputRef.current) inputRef.current.focus();
+      return;
+    }
     let hasError = false;
-
-    const deletionPromises = completedTodos.map(todo =>
-      deleteTodo(todo.id)
-        .then(() => {
-          setTodos(prev => prev.filter(t => t.id !== todo.id));
-        })
-        .catch(() => {
-          hasError = true;
-        }),
-    );
-
+    setProcessingIds(prev => ([...prev, ...completedTodos.map(t => t.id)]));
     try {
-      await Promise.all(deletionPromises);
-
-      if (hasError) {
+      await Promise.all(
+        completedTodos.map(todo =>
+          deleteTodo(todo.id).catch(() => {
+            hasError = true;
+          })
+        )
+      );
+      if (!hasError) {
+        setTodos(prev => prev.filter(t => !t.completed));
+      } else {
         setError('Unable to delete a todo');
       }
     } catch {
       setError('Unable to delete a todo');
     } finally {
-      // Focus input after response
+      setProcessingIds(prev => prev.filter(id => !completedTodos.some(t => t.id === id)));
       if (inputRef.current) {
         inputRef.current.focus();
       }
