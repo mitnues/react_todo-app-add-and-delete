@@ -7,11 +7,14 @@ interface Props {
 }
 
 export const ErrorNotification: React.FC<Props> = ({ error, onClose }) => {
+  if (!error) {
+    return null;
+  }
+
   return (
     <div
       className={classNames(
         'notification is-danger is-light has-text-weight-bold',
-        { hidden: !error },
       )}
       data-cy="ErrorNotification"
     >

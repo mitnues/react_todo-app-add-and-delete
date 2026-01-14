@@ -78,7 +78,14 @@ export const App: React.FC = () => {
   };
 
   if (!user) {
-    return <UserWarning onLogin={handleLogin} />;
+    return (
+      <div className="todoapp">
+        <header className="todoapp__header">
+          <h1 className="todoapp__title">todos</h1>
+        </header>
+        <UserWarning onLogin={handleLogin} />
+      </div>
+    );
   }
 
   const visibleTodos = todos.filter(todo => {
@@ -101,7 +108,8 @@ export const App: React.FC = () => {
     tempTodo && (filter === 'all' || isActive || isCompleted) ? tempTodo : null;
 
   const completedCount = todos.filter(todo => todo.completed).length;
-  const activeCount = todos.length - completedCount;
+  // Não considerar tempTodo no contador enquanto está pendente
+  const activeCount = todos.filter(todo => !todo.completed).length;
 
   const handleAddTodo = async (title: string) => {
     const trimmedTitle = title.trim();
@@ -127,14 +135,16 @@ export const App: React.FC = () => {
       ...newTodoData,
     });
 
+    // Não limpar o input enquanto está aguardando resposta
+
     try {
       const createdTodo = await createTodo(newTodoData);
 
       setTodos([...todos, createdTodo]);
-      // Clear input only after successful creation
-      setNewTodoTitle('');
+      setNewTodoTitle(''); // Limpa só após sucesso
     } catch {
       setError('Unable to add a todo');
+      // Não limpar o input em caso de erro
     } finally {
       setTempTodo(null);
       setIsAddingTodo(false);
@@ -203,30 +213,41 @@ export const App: React.FC = () => {
 
   const handleClearCompleted = async () => {
     const completedTodos = todos.filter(todo => todo.completed);
+
     setError(null);
     if (completedTodos.length === 0) {
-      if (inputRef.current) inputRef.current.focus();
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+
       return;
     }
-    let hasError = false;
-    setProcessingIds(prev => ([...prev, ...completedTodos.map(t => t.id)]));
+
+    setProcessingIds(prev => [...prev, ...completedTodos.map(t => t.id)]);
     try {
-      await Promise.all(
+      const results = await Promise.all(
         completedTodos.map(todo =>
-          deleteTodo(todo.id).catch(() => {
-            hasError = true;
-          })
-        )
+          deleteTodo(todo.id)
+            .then(() => ({ id: todo.id, success: true }))
+            .catch(() => ({ id: todo.id, success: false })),
+        ),
       );
-      if (!hasError) {
-        setTodos(prev => prev.filter(t => !t.completed));
-      } else {
+      const failed = results.filter(r => !r.success).map(r => r.id);
+      const succeeded = results.filter(r => r.success).map(r => r.id);
+
+      if (succeeded.length > 0) {
+        setTodos(prev => prev.filter(t => !succeeded.includes(t.id)));
+      }
+
+      if (failed.length > 0) {
         setError('Unable to delete a todo');
       }
     } catch {
       setError('Unable to delete a todo');
     } finally {
-      setProcessingIds(prev => prev.filter(id => !completedTodos.some(t => t.id === id)));
+      setProcessingIds(prev =>
+        prev.filter(id => !completedTodos.some(t => t.id === id)),
+      );
       if (inputRef.current) {
         inputRef.current.focus();
       }
