@@ -93,6 +93,7 @@ export const App: React.FC = () => {
     // Create temp todo
     setTempTodo({
       id: 0,
+      userId: 3825,
       ...newTodoData,
     });
 
@@ -109,8 +110,12 @@ export const App: React.FC = () => {
 
       setTodos([...todos, { ...createdTodo, id: uniqueId }]);
       setNewTodoTitle(''); // Limpa só após sucesso
-    } catch (err: any) {
-      setError(err?.message || 'Unable to add a todo');
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message || 'Unable to add a todo');
+      } else {
+        setError('Unable to add a todo');
+      }
       // Não limpar o input em caso de erro
     } finally {
       setTempTodo(null);
