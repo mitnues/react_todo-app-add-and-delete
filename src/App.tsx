@@ -86,7 +86,6 @@ export const App: React.FC = () => {
     setIsAddingTodo(true);
 
     const newTodoData = {
-      userId: 1,
       title: trimmedTitle,
       completed: false,
     };
@@ -110,8 +109,8 @@ export const App: React.FC = () => {
 
       setTodos([...todos, { ...createdTodo, id: uniqueId }]);
       setNewTodoTitle(''); // Limpa só após sucesso
-    } catch {
-      setError('Unable to add a todo');
+    } catch (err: any) {
+      setError(err?.message || 'Unable to add a todo');
       // Não limpar o input em caso de erro
     } finally {
       setTempTodo(null);
