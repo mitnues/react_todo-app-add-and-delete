@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { UserWarning } from './UserWarning';
+// import { UserWarning } from './UserWarning';
 import {
   ErrorNotification,
   FilterType,
@@ -7,11 +7,11 @@ import {
   NewTodoField,
   TodoList,
 } from './components';
-import { Todo, User } from './types/Todo';
-import { createTodo, deleteTodo, getTodos, updateTodo } from './api/todosApi';
+import { Todo } from './types/Todo';
+import { createTodo, deleteTodo, updateTodo } from './api/todosApi';
 
 export const App: React.FC = () => {
-  const [user, setUser] = useState<User | null>(null);
+  // No user state, use fixed id
   const [todos, setTodos] = useState<Todo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -22,35 +22,13 @@ export const App: React.FC = () => {
   const [isAddingTodo, setIsAddingTodo] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Load user from localStorage
+  // No user to load
+
+  // Load todos on mount
   useEffect(() => {
-    const userJson = localStorage.getItem('user');
-
-    if (userJson) {
-      try {
-        const userData = JSON.parse(userJson);
-
-        setUser(userData);
-      } catch {
-        // Invalid JSON
-      }
-    }
+    setIsLoading(false);
+    setTodos([]); // Start with an empty list
   }, []);
-
-  // Load todos on mount or when user changes
-  useEffect(() => {
-    if (!user) {
-      return;
-    }
-
-    setIsLoading(true);
-    getTodos(user.id)
-      .then(setTodos)
-      .catch(() => {
-        setError('Unable to load todos');
-      })
-      .finally(() => setIsLoading(false));
-  }, [user]);
 
   // Focus input after adding a todo
   useEffect(() => {
@@ -70,23 +48,7 @@ export const App: React.FC = () => {
     return () => clearTimeout(timer);
   }, [error]);
 
-  const handleLogin = (email: string) => {
-    const newUser = { id: 1, email };
-
-    setUser(newUser);
-    localStorage.setItem('user', JSON.stringify(newUser));
-  };
-
-  if (!user) {
-    return (
-      <div className="todoapp">
-        <header className="todoapp__header">
-          <h1 className="todoapp__title">todos</h1>
-        </header>
-        <UserWarning onLogin={handleLogin} />
-      </div>
-    );
-  }
+  // No login, always show todos
 
   const visibleTodos = todos.filter(todo => {
     if (filter === 'active') {
@@ -124,7 +86,7 @@ export const App: React.FC = () => {
     setIsAddingTodo(true);
 
     const newTodoData = {
-      userId: user.id,
+      userId: 1,
       title: trimmedTitle,
       completed: false,
     };
@@ -139,8 +101,14 @@ export const App: React.FC = () => {
 
     try {
       const createdTodo = await createTodo(newTodoData);
+      // If API returns no id or duplicate id, generate a unique one
+      let uniqueId = createdTodo.id;
 
-      setTodos([...todos, createdTodo]);
+      if (!uniqueId || todos.some(t => t.id === uniqueId)) {
+        uniqueId = Math.max(0, ...todos.map(t => t.id)) + 1;
+      }
+
+      setTodos([...todos, { ...createdTodo, id: uniqueId }]);
       setNewTodoTitle(''); // Limpa só após sucesso
     } catch {
       setError('Unable to add a todo');
