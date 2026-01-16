@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 // import { UserWarning } from './UserWarning';
+import { getTodos, USER_ID } from './api/todosApi';
+
 import {
   ErrorNotification,
   FilterType,
@@ -24,10 +26,27 @@ export const App: React.FC = () => {
 
   // No user to load
 
-  // Load todos on mount
+  // // Load todos on mount
+  // useEffect(() => {
+  //   setIsLoading(false);
+  //   setTodos([]); // Start with an empty list
+  // }, []);
+
   useEffect(() => {
-    setIsLoading(false);
-    setTodos([]); // Start with an empty list
+    // Define an internal async function to handle the promise
+    const loadData = async () => {
+      try {
+        setIsLoading(true);
+        const data = await getTodos();
+        setTodos(data);
+      } catch (error) {
+        console.error("Error loading todos:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
   }, []);
 
   // Focus input after adding a todo
@@ -93,7 +112,7 @@ export const App: React.FC = () => {
     // Create temp todo
     setTempTodo({
       id: 0,
-      userId: 3825,
+      userId: USER_ID,
       ...newTodoData,
     });
 
