@@ -1,6 +1,7 @@
 import { Todo } from '../types/Todo';
 
 const BASE_URL = 'https://mate.academy/students-api';
+
 export const USER_ID = 3825;
 
 export const getTodos = (): Promise<Todo[]> => {

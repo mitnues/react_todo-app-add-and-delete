@@ -38,9 +38,11 @@ export const App: React.FC = () => {
       try {
         setIsLoading(true);
         const data = await getTodos();
+
         setTodos(data);
-      } catch (error) {
-        console.error("Error loading todos:", error);
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('Error loading todos:', err);
       } finally {
         setIsLoading(false);
       }
